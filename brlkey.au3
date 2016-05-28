@@ -1,3 +1,4 @@
+#include <Array.au3>
 #include <MsgBoxConstants.au3>
 #include <StructureConstants.au3>
 #include <WinAPI.au3>
@@ -44,7 +45,7 @@ EndFunc
 
 Func _KeyProc($nCode, $wParam, $lParam)
     Local Enum $KB_NORMAL = 0, $KB_BRL_ENGLISH, $KB_BRL_CHINESE
-    Static $dots[] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
+    Static $dots[8] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
     If $nCode < 0 Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $tKEYHOOKS = DllStructCreate($tagKBDLLHOOKSTRUCT, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")
@@ -71,7 +72,10 @@ Func _KeyProc($nCode, $wParam, $lParam)
                     Else
                         _WinAPI_MessageBeep()
                     EndIf
+                Else
+                    Send(_ArrayToString($dots, "", 1, $dots[0]), 1)
                 EndIf
+                $dots[0] = 0
                 $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
             EndIf
             If $mode Then Return 1
@@ -114,9 +118,13 @@ Func _KeyProc($nCode, $wParam, $lParam)
         EndIf
     ElseIf $wParam = $WM_KEYDOWN Then
         If $k Then
+            If Not BitAND($state[0], $k) Then
+                $dots[0] += 1
+                $dots[$dots[0]] = Chr($vkCode)
+            EndIf
             $state[1] = BitOR($state[1], $k)
             $state[0] = BitOR($state[0], $k)
-            If $mode Then Return 1
+            Return 1
         ElseIf $vkCode = $VK_LCONTROL Then
             $state[1] = BitOr($state[1], $LMENU_PRESSED)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $RMENU_PRESSED) Then $state[0] = BitOr($state[0], $RMENU_PRESSED)

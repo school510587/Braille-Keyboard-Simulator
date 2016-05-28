@@ -58,7 +58,12 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 If $state[0] = $SPACE_BAR Then; Single space bar.
                     If $mode Then Send("{SPACE}")
                 ElseIf BitAND($state[0], $SPACE_BAR) Then
-                    _WinAPI_MessageBeep(4)
+                    Switch BitAND($state[0], $EIGHT_DOTS_MASK)
+                      Case BitOR($DOT_1, $DOT_2, $DOT_3)
+                        $mode = BitXOR($mode, $KB_BRL_ENGLISH)
+                      Case Else
+                        _WinAPI_MessageBeep(4)
+                    EndSwitch
                 ElseIf $mode Then; It is in BRL mode.
                     $dots = BRL2Chr(BitAND($state[0], $BRL_MASK))
                     If $dots Then; Valid BRL inputs.

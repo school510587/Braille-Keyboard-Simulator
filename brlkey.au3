@@ -44,7 +44,7 @@ EndFunc
 
 Func _KeyProc($nCode, $wParam, $lParam)
     Local Enum $KB_NORMAL = 0, $KB_BRL_ENGLISH, $KB_BRL_CHINESE
-    Static $dots = 0, $state[] = [0, 0], $mode = $KB_NORMAL
+    Static $dots[] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
     If $nCode < 0 Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $tKEYHOOKS = DllStructCreate($tagKBDLLHOOKSTRUCT, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")
@@ -65,9 +65,9 @@ Func _KeyProc($nCode, $wParam, $lParam)
                         _WinAPI_MessageBeep(4)
                     EndSwitch
                 ElseIf $mode Then; It is in BRL mode.
-                    $dots = BRL2Chr(BitAND($state[0], $BRL_MASK))
-                    If $dots Then; Valid BRL inputs.
-                        Send($dots, 1)
+                    $dots[0] = BRL2Chr(BitAND($state[0], $BRL_MASK))
+                    If $dots[0] Then; Valid BRL inputs.
+                        Send($dots[0], 1)
                     Else
                         _WinAPI_MessageBeep()
                     EndIf

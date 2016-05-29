@@ -3,6 +3,7 @@
 #include <StructureConstants.au3>
 #include <WinAPI.au3>
 #include <WindowsConstants.au3>
+#include <WinAPISys.au3>
 #include <WinAPIvkeysConstants.au3>
 
 Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys).
@@ -57,7 +58,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
             $state[1] = BitAND($state[1], BitNOT($k))
             If BitAND($state[0], $BRL_MASK) And Not BitAND($state[1], $BRL_MASK) Then
                 If $state[0] = $SPACE_BAR Then; Single space bar.
-                    If $mode Then Send("{SPACE}")
+                    Send("{SPACE}")
                 ElseIf BitAND($state[0], $SPACE_BAR) Then
                     Switch BitAND($state[0], $EIGHT_DOTS_MASK)
                       Case BitOR($DOT_1, $DOT_2, $DOT_3)
@@ -73,12 +74,14 @@ Func _KeyProc($nCode, $wParam, $lParam)
                         _WinAPI_MessageBeep()
                     EndIf
                 Else
-                    Send(_ArrayToString($dots, "", 1, $dots[0]), 1)
+                    $dots[0] = _ArrayToString($dots, "", 1, $dots[0])
+                    If Not BitAND(_WinAPI_GetKeyState($VK_CAPITAL), 1) Then $dots[0] = StringLower($dots[0])
+                    Send($dots[0], 1)
                 EndIf
                 $dots[0] = 0
                 $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
             EndIf
-            If $mode Then Return 1
+            Return 1
         ElseIf $vkCode = $VK_LCONTROL Then
             $state[1] = BitAND($state[1], BitNOT($LMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then

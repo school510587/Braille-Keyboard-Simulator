@@ -45,7 +45,7 @@ EndFunc
 
 Func _KeyProc($nCode, $wParam, $lParam)
     Local Enum $KB_NORMAL = 0, $KB_BRL_ENGLISH, $KB_BRL_CHINESE
-    Static $dots[8] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
+    Static $dots[9] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
     If $nCode < 0 Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $tKEYHOOKS = DllStructCreate($tagKBDLLHOOKSTRUCT, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")

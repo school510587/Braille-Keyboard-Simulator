@@ -16,11 +16,22 @@ Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys
     $DOT_7, _
     $DOT_8, _
     $SPACE_BAR, _
+    $CAPSLOCK_PRESSED, _
+    $INSERT_PRESSED, _
+    $LWIN_PRESSED, _
+    $RWIN_PRESSED, _
+    $NUMPAD0_PRESSED, _
+    $LSHIFT_PRESSED, _
+    $RSHIFT_PRESSED, _
+    $LCONTROL_PRESSED, _
+    $RCONTROL_PRESSED, _
     $LMENU_PRESSED, _
     $RMENU_PRESSED, _
     $SIX_DOTS_MASK = BitOR($DOT_1, $DOT_2, $DOT_3, $DOT_4, $DOT_5, $DOT_6), _
     $EIGHT_DOTS_MASK = BitOR($SIX_DOTS_MASK, $DOT_7, $DOT_8), _
     $BRL_MASK = BitOR($EIGHT_DOTS_MASK, $SPACE_BAR), _
+    $MODIFIER_KEY_MASK = BitOR($CAPSLOCK_PRESSED, $INSERT_PRESSED, $LWIN_PRESSED, $RWIN_PRESSED, $NUMPAD0_PRESSED, _
+        $LSHIFT_PRESSED, $RSHIFT_PRESSED, $LCONTROL_PRESSED, $RCONTROL_PRESSED), _
     $LRMENU_MASK = BitOr($LMENU_PRESSED, $RMENU_PRESSED)
 Global $g_hHook, $g_hStub_KeyProc
 
@@ -55,6 +66,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
     Local $k = IsBRLKey($vkCode)
     If $wParam = $WM_KEYUP Then
         If $k Then
+If BitAND($state[1], $k) Then
             $state[1] = BitAND($state[1], BitNOT($k))
             If BitAND($state[0], $BRL_MASK) And Not BitAND($state[1], $BRL_MASK) Then
                 If $state[0] = $SPACE_BAR Then; Single space bar.
@@ -82,6 +94,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
             EndIf
             Return 1
+EndIf
         ElseIf $vkCode = $VK_LMENU Then
             $state[1] = BitAND($state[1], BitNOT($LMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
@@ -118,9 +131,12 @@ Func _KeyProc($nCode, $wParam, $lParam)
             Return 1
         ElseIf $vkCode = $VK_ESCAPE Then
             Exit
+        Else
+            $state[1] = BitAND($state[1], BitNOT(ModifierKey2Flag($vkCode)))
         EndIf
     ElseIf $wParam = $WM_KEYDOWN Then
         If $k Then
+If Not BitAND($state[1], $MODIFIER_KEY_MASK) Then
             If Not BitAND($state[0], $k) Then
                 $dots[0] += 1
                 $dots[$dots[0]] = Chr($vkCode)
@@ -128,6 +144,9 @@ Func _KeyProc($nCode, $wParam, $lParam)
             $state[1] = BitOR($state[1], $k)
             $state[0] = BitOR($state[0], $k)
             Return 1
+EndIf
+        Else
+            $state[1] = BitOR($state[1], ModifierKey2Flag($vkCode))
         EndIf
     ElseIf $wParam = $WM_SYSKEYDOWN Then
         If $vkCode = $VK_LMENU Then
@@ -183,4 +202,28 @@ Func IsBRLKey($iKeycode)
         Return $SPACE_BAR
     EndSwitch
     Return 0; Not a BRL key.
+EndFunc
+
+Func ModifierKey2Flag($vkCode)
+    Switch $vkCode
+      Case $VK_CAPITAL
+        Return $CAPSLOCK_PRESSED
+      Case $VK_INSERT
+        Return $INSERT_PRESSED
+      Case $VK_LWIN
+        Return $LWIN_PRESSED
+      Case $VK_RWIN
+        Return $RWIN_PRESSED
+      Case $VK_NUMPAD0
+        Return $NUMPAD0_PRESSED
+      Case $VK_LSHIFT
+        Return $LSHIFT_PRESSED
+      Case $VK_RSHIFT
+        Return $RSHIFT_PRESSED
+      Case $VK_LCONTROL
+        Return $LCONTROL_PRESSED
+      Case $VK_RCONTROL
+        Return $RCONTROL_PRESSED
+    EndSwitch
+    Return 0; Null flag.
 EndFunc

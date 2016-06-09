@@ -82,7 +82,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
             EndIf
             Return 1
-        ElseIf $vkCode = $VK_LCONTROL Then
+        ElseIf $vkCode = $VK_LMENU Then
             $state[1] = BitAND($state[1], BitNOT($LMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
                 Switch BitAND($state[0], $LRMENU_MASK)
@@ -94,12 +94,12 @@ Func _KeyProc($nCode, $wParam, $lParam)
                     $mode = $KB_BRL_ENGLISH
                     _WinAPI_MessageBeep()
                   Case Else
-                    Send("{LCTRL}")
+                    Send("{LALT}")
                 EndSwitch
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
             Return 1
-        ElseIf $vkCode = $VK_RCONTROL Then
+        ElseIf $vkCode = $VK_RMENU Then
             $state[1] = BitAND($state[1], BitNOT($RMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
                 Switch BitAND($state[0], $LRMENU_MASK)
@@ -111,7 +111,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
                     $mode = $KB_BRL_ENGLISH
                     _WinAPI_MessageBeep()
                   Case Else
-                    Send("{RCTRL}")
+                    Send("{RALT}")
                 EndSwitch
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
@@ -128,11 +128,13 @@ Func _KeyProc($nCode, $wParam, $lParam)
             $state[1] = BitOR($state[1], $k)
             $state[0] = BitOR($state[0], $k)
             Return 1
-        ElseIf $vkCode = $VK_LCONTROL Then
+        EndIf
+    ElseIf $wParam = $WM_SYSKEYDOWN Then
+        If $vkCode = $VK_LMENU Then
             $state[1] = BitOr($state[1], $LMENU_PRESSED)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $RMENU_PRESSED) Then $state[0] = BitOr($state[0], $RMENU_PRESSED)
             Return 1
-        ElseIf $vkCode = $VK_RCONTROL Then
+        ElseIf $vkCode = $VK_RMENU Then
             $state[1] = BitOr($state[1], $RMENU_PRESSED)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $LMENU_PRESSED) Then $state[0] = BitOr($state[0], $LMENU_PRESSED)
             Return 1

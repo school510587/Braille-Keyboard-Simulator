@@ -18,9 +18,9 @@ Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys
     $SPACE_BAR, _
     $LMENU_PRESSED, _
     $RMENU_PRESSED, _
-    $SIX_DOTS_MASK = BitOR($DOT_1, $DOT_2, $DOT_3, $DOT_4, $DOT_5, $DOT_6)
-    $EIGHT_DOTS_MASK = BitOR($SIX_DOTS_MASK, $DOT_7, $DOT_8)
-    $BRL_MASK = BitOR($EIGHT_DOTS_MASK, $SPACE_BAR)
+    $SIX_DOTS_MASK = BitOR($DOT_1, $DOT_2, $DOT_3, $DOT_4, $DOT_5, $DOT_6), _
+    $EIGHT_DOTS_MASK = BitOR($SIX_DOTS_MASK, $DOT_7, $DOT_8), _
+    $BRL_MASK = BitOR($EIGHT_DOTS_MASK, $SPACE_BAR), _
     $LRMENU_MASK = BitOr($LMENU_PRESSED, $RMENU_PRESSED)
 Global $g_hHook, $g_hStub_KeyProc
 

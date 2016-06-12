@@ -77,8 +77,10 @@ Func _KeyProc($nCode, $wParam, $lParam)
                   Case $LMENU_PRESSED
                     $mode = $KB_BRL_ENGLISH
                     _WinAPI_MessageBeep()
-                  Case Else
+                  Case 0; Single LALT press.
                     Send("{LALT}")
+                  Case Else
+                    Send("{ALT up}")
                 EndSwitch
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
@@ -94,8 +96,10 @@ Func _KeyProc($nCode, $wParam, $lParam)
                   Case $LMENU_PRESSED
                     $mode = $KB_BRL_ENGLISH
                     _WinAPI_MessageBeep()
-                  Case Else
+                  Case 0; Single RALT press.
                     Send("{RALT}")
+                  Case Else
+                    Send("{ALT up}")
                 EndSwitch
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
@@ -161,6 +165,9 @@ Func _KeyProc($nCode, $wParam, $lParam)
             $state[1] = BitOr($state[1], $RMENU_PRESSED)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $LMENU_PRESSED) Then $state[0] = BitOr($state[0], $LMENU_PRESSED)
             Return 1
+        Else; Let The keydown message go without additional one ALT press.
+            Send("{ALT down}")
+            $state[0] = BitOR($state[0], $LRMENU_MASK)
         EndIf
     EndSwitch
     Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)

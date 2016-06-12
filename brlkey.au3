@@ -63,39 +63,8 @@ Func _KeyProc($nCode, $wParam, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")
     If BitAND($iFlags, $LLKHF_INJECTED) Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $vkCode = DllStructGetData($tKEYHOOKS, "vkCode")
-    Local $k = IsBRLKey($vkCode)
     If $wParam = $WM_KEYUP Then
-        If $k Then
-If BitAND($state[1], $k) Then
-            $state[1] = BitAND($state[1], BitNOT($k))
-            If BitAND($state[0], $BRL_MASK) And Not BitAND($state[1], $BRL_MASK) Then
-                If $state[0] = $SPACE_BAR Then; Single space bar.
-                    Send("{SPACE}")
-                ElseIf BitAND($state[0], $SPACE_BAR) Then
-                    Switch BitAND($state[0], $EIGHT_DOTS_MASK)
-                      Case BitOR($DOT_1, $DOT_2, $DOT_3)
-                        $mode = BitXOR($mode, $KB_BRL_ENGLISH)
-                      Case Else
-                        _WinAPI_MessageBeep(4)
-                    EndSwitch
-                ElseIf $mode Then; It is in BRL mode.
-                    $dots[0] = BRL2Chr(BitAND($state[0], $BRL_MASK))
-                    If $dots[0] Then; Valid BRL inputs.
-                        Send($dots[0], 1)
-                    Else
-                        _WinAPI_MessageBeep()
-                    EndIf
-                Else
-                    $dots[0] = _ArrayToString($dots, "", 1, $dots[0])
-                    If Not BitAND(_WinAPI_GetKeyState($VK_CAPITAL), 1) Then $dots[0] = StringLower($dots[0])
-                    Send($dots[0], 1)
-                EndIf
-                $dots[0] = 0
-                $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
-            EndIf
-            Return 1
-EndIf
-        ElseIf $vkCode = $VK_LMENU Then
+        If $vkCode = $VK_LMENU Then
             $state[1] = BitAND($state[1], BitNOT($LMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
                 Switch BitAND($state[0], $LRMENU_MASK)
@@ -131,20 +100,53 @@ EndIf
             Return 1
         ElseIf $vkCode = $VK_ESCAPE Then
             Exit
+        EndIf
+        Local $k = IsBRLKey($vkCode)
+        If $k Then
+            If BitAND($state[1], $k) Then
+                $state[1] = BitAND($state[1], BitNOT($k))
+                If BitAND($state[0], $BRL_MASK) And Not BitAND($state[1], $BRL_MASK) Then
+                    If $state[0] = $SPACE_BAR Then; Single space bar.
+                        Send("{SPACE}")
+                    ElseIf BitAND($state[0], $SPACE_BAR) Then
+                        Switch BitAND($state[0], $EIGHT_DOTS_MASK)
+                          Case BitOR($DOT_1, $DOT_2, $DOT_3)
+                            $mode = BitXOR($mode, $KB_BRL_ENGLISH)
+                          Case Else
+                            _WinAPI_MessageBeep(4)
+                        EndSwitch
+                    ElseIf $mode Then; It is in BRL mode.
+                        $dots[0] = BRL2Chr(BitAND($state[0], $BRL_MASK))
+                        If $dots[0] Then; Valid BRL inputs.
+                            Send($dots[0], 1)
+                        Else
+                            _WinAPI_MessageBeep()
+                        EndIf
+                    Else
+                        $dots[0] = _ArrayToString($dots, "", 1, $dots[0])
+                        If Not BitAND(_WinAPI_GetKeyState($VK_CAPITAL), 1) Then $dots[0] = StringLower($dots[0])
+                        Send($dots[0], 1)
+                    EndIf
+                    $dots[0] = 0
+                    $state[0] = BitAND($state[0], BitNOT($BRL_MASK))
+                EndIf
+                Return 1
+            EndIf
         Else
             $state[1] = BitAND($state[1], BitNOT(ModifierKey2Flag($vkCode)))
         EndIf
     ElseIf $wParam = $WM_KEYDOWN Then
+        Local $k = IsBRLKey($vkCode)
         If $k Then
-If Not BitAND($state[1], $MODIFIER_KEY_MASK) Then
-            If Not BitAND($state[0], $k) Then
-                $dots[0] += 1
-                $dots[$dots[0]] = Chr($vkCode)
+            If Not BitAND($state[1], $MODIFIER_KEY_MASK) Then
+                If Not BitAND($state[0], $k) Then
+                    $dots[0] += 1
+                    $dots[$dots[0]] = Chr($vkCode)
+                EndIf
+                $state[1] = BitOR($state[1], $k)
+                $state[0] = BitOR($state[0], $k)
+                Return 1
             EndIf
-            $state[1] = BitOR($state[1], $k)
-            $state[0] = BitOR($state[0], $k)
-            Return 1
-EndIf
         Else
             $state[1] = BitOR($state[1], ModifierKey2Flag($vkCode))
         EndIf

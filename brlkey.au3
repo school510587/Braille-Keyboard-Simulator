@@ -63,8 +63,10 @@ Func _KeyProc($nCode, $wParam, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")
     If BitAND($iFlags, $LLKHF_INJECTED) Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $vkCode = DllStructGetData($tKEYHOOKS, "vkCode")
-    If $wParam = $WM_KEYUP Then
-        If $vkCode = $VK_LMENU Then
+    Switch $wParam
+      Case $WM_KEYUP
+        Switch $vkCode
+          Case $VK_LMENU
             $state[1] = BitAND($state[1], BitNOT($LMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
                 Switch BitAND($state[0], $LRMENU_MASK)
@@ -81,7 +83,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
             Return 1
-        ElseIf $vkCode = $VK_RMENU Then
+          Case $VK_RMENU
             $state[1] = BitAND($state[1], BitNOT($RMENU_PRESSED))
             If Not BitAND($state[1], $LRMENU_MASK) Then
                 Switch BitAND($state[0], $LRMENU_MASK)
@@ -98,9 +100,9 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
             Return 1
-        ElseIf $vkCode = $VK_ESCAPE Then
+          Case $VK_ESCAPE
             Exit
-        EndIf
+        EndSwitch
         Local $k = IsBRLKey($vkCode)
         If $k Then
             If BitAND($state[1], $k) Then
@@ -135,7 +137,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
         Else
             $state[1] = BitAND($state[1], BitNOT(ModifierKey2Flag($vkCode)))
         EndIf
-    ElseIf $wParam = $WM_KEYDOWN Then
+      Case $WM_KEYDOWN
         Local $k = IsBRLKey($vkCode)
         If $k Then
             If Not BitAND($state[1], $MODIFIER_KEY_MASK) Then
@@ -150,7 +152,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
         Else
             $state[1] = BitOR($state[1], ModifierKey2Flag($vkCode))
         EndIf
-    ElseIf $wParam = $WM_SYSKEYDOWN Then
+      Case $WM_SYSKEYDOWN
         If $vkCode = $VK_LMENU Then
             $state[1] = BitOr($state[1], $LMENU_PRESSED)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $RMENU_PRESSED) Then $state[0] = BitOr($state[0], $RMENU_PRESSED)
@@ -160,7 +162,7 @@ Func _KeyProc($nCode, $wParam, $lParam)
             If Not BitAND($state[0], $LRMENU_MASK) And BitAND($state[1], $LMENU_PRESSED) Then $state[0] = BitOr($state[0], $LMENU_PRESSED)
             Return 1
         EndIf
-    EndIf
+    EndSwitch
     Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
 EndFunc
 

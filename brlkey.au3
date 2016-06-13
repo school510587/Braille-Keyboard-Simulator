@@ -46,11 +46,11 @@ Func Example()
     $hMod = _WinAPI_GetModuleHandle(0)
     $g_hHook = _WinAPI_SetWindowsHookEx($WH_KEYBOARD_LL, DllCallbackGetPtr($g_hStub_KeyProc), $hMod)
 
-    Run("notepad.exe")
+    Local $pid = Run("notepad.exe")
     WinWait("[CLASS:Notepad]")
     WinActivate("[CLASS:Notepad]")
 
-    While 1
+    While ProcessExists($pid)
         Sleep(10)
     WEnd
 EndFunc
@@ -104,8 +104,6 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[0] = BitAND($state[0], BitNOT($LRMENU_MASK))
             EndIf
             Return 1
-          Case $VK_ESCAPE
-            Exit
         EndSwitch
         Local $k = IsBRLKey($vkCode)
         If $k Then

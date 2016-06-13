@@ -124,13 +124,19 @@ Func _KeyProc($nCode, $wParam, $lParam)
                     ElseIf $mode Then; It is in BRL mode.
                         $dots[0] = BRL2Chr(BitAND($state[0], $BRL_MASK))
                         If $dots[0] Then; Valid BRL inputs.
-                            Send($dots[0], 1)
+                            If StringIsAlpha($dots[0]) Then
+                                $dots[0] = StringLower($dots[0])
+                                If BitXOR((BitAND($state[0], $DOT_7)) ? 1 : 0, _WinAPI_GetKeyState($VK_CAPITAL)) Then $dots[0] = "+" & $dots[0]
+                                Send($dots[0], 0)
+                            Else
+                                Send($dots[0], 1)
+                            EndIf
                         Else
                             _WinAPI_MessageBeep()
                         EndIf
                     Else
                         $dots[0] = _ArrayToString($dots, "", 1, $dots[0])
-                        If Not BitAND(_WinAPI_GetKeyState($VK_CAPITAL), 1) Then $dots[0] = StringLower($dots[0])
+                        $dots[0] = StringLower($dots[0])
                         Send($dots[0], 1)
                     EndIf
                     $dots[0] = 0

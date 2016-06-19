@@ -43,6 +43,20 @@ Func BRL2Chr($iBRL); BRL to character, except the space.
     Return $c
 EndFunc
 
+Func Digits2BRL($str)
+    Local $cell_list = StringSplit($str, "-"), $dots
+    For $i = 1 To $cell_list[0]
+        $dots = 0x2800
+        If $cell_list[$i] <> "0" Then
+            For $d In StringSplit($cell_list[$i], "", $STR_NOCOUNT)
+                $dots = BitOR($dots, Eval("DOT_" & $d))
+            Next
+        EndIf
+        $cell_list[$i] = Asc(BRL2Chr($dots))
+    Next
+    Return StringFromASCIIArray($cell_list, 1)
+EndFunc
+
 Func IsBRLKey($iKeycode)
     Switch $iKeycode
       Case $VK_A

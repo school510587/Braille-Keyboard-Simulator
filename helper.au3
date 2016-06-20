@@ -1,4 +1,7 @@
 #include-once
+#include <Array.au3>
+#include <AutoItConstants.au3>
+#include <File.au3>
 
 Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys).
     $DOT_1 = 1, _
@@ -27,6 +30,31 @@ Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys
     $MODIFIER_KEY_MASK = BitOR($CAPSLOCK_PRESSED, $INSERT_PRESSED, $LWIN_PRESSED, $RWIN_PRESSED, $NUMPAD0_PRESSED, _
         $LSHIFT_PRESSED, $RSHIFT_PRESSED, $LCONTROL_PRESSED, $RCONTROL_PRESSED), _
     $LRMENU_MASK = BitOr($LMENU_PRESSED, $RMENU_PRESSED)
+
+Func BRL2Bopomofo($sBRL, $bReload = False)
+    Static $table = Null
+    If $bReload Or Not $table Then
+        Local $bopomofo_list
+        _FileReadToArray("bopomofo.txt", $table, $FRTA_NOCOUNT, @TAB)
+        If @error Then
+            $table = Null
+            Return SetError($EOF, 0, "")
+        EndIf
+        For $i = 0 To UBound($table, $UBOUND_ROWS) - 1
+            $table[$i][0] = Digits2BRL($table[$i][0])
+            $bopomofo_list = StringSplit($table[$i][1], "-")
+            For $j = 1 To $bopomofo_list[0]
+                $bopomofo_list[$j] = Dec($bopomofo_list[$j])
+            Next
+            $table[$i][1] = StringFromASCIIArray($bopomofo_list, 1)
+        Next
+        _ArraySort($table)
+    EndIf
+    Local $pos = _ArraySearch($table, "^\Q" & $sBRL, 0, 0, 1, 3); Prefix test.
+    If @error Then Return SetError(1, 0, ""); Not found.
+    $pos = _ArraySearch($table, $sBRL, $pos, 0, 1); Exact matching.
+    Return SetError(0, 0, @error ? "" : $table[$pos][1]); Either prefix or a match.
+EndFunc
 
 Func BRL2Chr($iBRL); BRL to character, except the space.
     Static $raw = "a1b'k2l`cif/msp""e3h9o6r~djg>ntq,*5<-u8v.%{$+x!&;:4|0z7(_?w}#y)="; It must be constant.

@@ -130,3 +130,31 @@ Func ModifierKey2Flag($vkCode)
     EndSwitch
     Return 0; Null flag.
 EndFunc
+
+Func BRL2Key($sBRL, $hKL)
+    Static $data[][] = [[0x04040404, Null]]
+    Local $t = _ArraySearch($data, $hKL)
+    If @error Then; The specified $hKL is currently not found.
+        Local $row[][UBound($data, $UBOUND_COLUMNS)] = [[$hKL]], $pos = 0
+        _FileReadToArray("Keyboard-Layouts\" & Hex($hKL, 8) & ".txt", $t, $FRTA_NOCOUNT, @TAB)
+        If @error Then Return SetError($EOF, 0, $sBRL)
+        For $i = 0 To UBound($t, $UBOUND_ROWS) - 1
+            $t[$i][0] = Dec($t[$i][0])
+            If $t[$i][1] = "{SPACE}" Then $t[$i][1] = " "
+        Next
+        _ArraySort($t)
+        $row[0][1] = $t
+        _ArrayAdd($data, $row)
+    Else
+        $t = $data[$t][1]; To read out the embedded array.
+        If Not IsArray($t) Then Return SetError(0, 0, $sBRL); The default keyboard layout.
+    EndIf
+    $sBRL = BRL2Bopomofo($sBRL)
+    If Not $sBRL Then Return SetError(@error, @extended, $sBRL)
+    Local $answer = "", $p
+    For $c In StringToASCIIArray($sBRL)
+        $p = _ArrayBinarySearch($t, $c)
+        $answer &= @error ? $c : $t[$p][1]
+    Next
+    Return SetError(0, 0, $answer)
+EndFunc

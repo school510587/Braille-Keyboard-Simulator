@@ -31,11 +31,14 @@ EndFunc
 
 Func _KeyProc($nCode, $wParam, $lParam)
     Local Enum $KB_NORMAL = 0, $KB_BRL_ENGLISH, $KB_BRL_CHINESE
-    Static $dots[9] = [0], $state[] = [0, 0], $mode = $KB_NORMAL
+    Static $dots[9] = [0], $state[] = [0, 0], $mode = $KB_NORMAL, $buffer = "", $hKL = 0
     If $nCode < 0 Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
     Local $tKEYHOOKS = DllStructCreate($tagKBDLLHOOKSTRUCT, $lParam)
     Local $iFlags = DllStructGetData($tKEYHOOKS, "flags")
     If BitAND($iFlags, $LLKHF_INJECTED) Then Return _WinAPI_CallNextHookEx($g_hHook, $nCode, $wParam, $lParam)
+    Local $hKL_current = _WinAPI_GetKeyboardLayout(_WinAPI_GetForegroundWindow())
+    If $hKL_current <> $hKL Then $buffer = ""
+    $hKL = $hKL_current
     Local $vkCode = DllStructGetData($tKEYHOOKS, "vkCode")
     Switch $wParam
       Case $WM_KEYUP
@@ -85,24 +88,21 @@ Func _KeyProc($nCode, $wParam, $lParam)
                 $state[1] = BitAND($state[1], BitNOT($k))
                 If BitAND($state[0], $BRL_MASK) And Not BitAND($state[1], $BRL_MASK) Then
                     If $state[0] = $SPACE_BAR Then; Single space bar.
-                        Send("{SPACE}")
+                        $buffer &= " "
                     ElseIf BitAND($state[0], $SPACE_BAR) Then
                         Switch BitAND($state[0], $EIGHT_DOTS_MASK)
                           Case BitOR($DOT_1, $DOT_2, $DOT_3)
                             $mode = BitXOR($mode, $KB_BRL_ENGLISH)
+                          Case BitOR($DOT_2, $DOT_4, $DOT_5)
+                            $buffer = ""
                           Case Else
                             _WinAPI_MessageBeep(4)
                         EndSwitch
+                        $buffer = ""
                     ElseIf $mode Then; It is in BRL mode.
                         $dots[0] = BRL2Chr(BitAND($state[0], $BRL_MASK))
-                        If $dots[0] Then; Valid BRL inputs.
-                            If StringIsAlpha($dots[0]) Then
-                                $dots[0] = StringLower($dots[0])
-                                If BitXOR((BitAND($state[0], $DOT_7)) ? 1 : 0, _WinAPI_GetKeyState($VK_CAPITAL)) Then $dots[0] = "+" & $dots[0]
-                                Send($dots[0], 0)
-                            Else
-                                Send($dots[0], 1)
-                            EndIf
+                        If $dots[0] Then; Valid BRL input.
+                            $buffer &= $dots[0]
                         Else
                             _WinAPI_MessageBeep()
                         EndIf
@@ -110,6 +110,22 @@ Func _KeyProc($nCode, $wParam, $lParam)
                         $dots[0] = _ArrayToString($dots, "", 1, $dots[0])
                         $dots[0] = StringLower($dots[0])
                         Send($dots[0], 1)
+                        $buffer = ""
+                    EndIf
+                    If $buffer Then; Non-empty buffer.
+                        $dots[0] = BRL2Key($buffer, $hKL)
+                        If $dots[0] Then; Valid BRL string.
+                            If StringIsAlpha($dots[0]) Then
+                                $dots[0] = StringLower($dots[0])
+                                If BitXOR((BitAND($state[0], $DOT_7)) ? 1 : 0, _WinAPI_GetKeyState($VK_CAPITAL)) Then $dots[0] = "+" & $dots[0]
+                                Send($dots[0], 0)
+                            Else
+                                Send($dots[0], 1)
+                            EndIf
+                            $buffer = ""
+                        ElseIf @error Then
+                            _WinAPI_MessageBeep()
+                        EndIf
                     EndIf
                     $dots[0] = 0
                     $state[0] = BitAND($state[0], BitNOT($BRL_MASK))

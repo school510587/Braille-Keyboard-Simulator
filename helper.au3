@@ -140,14 +140,13 @@ Func BRL2Key($sBRL, $hKL)
         If @error Then Return SetError($EOF, 0, $sBRL)
         For $i = 0 To UBound($t, $UBOUND_ROWS) - 1
             $t[$i][0] = Dec($t[$i][0])
-            If $t[$i][1] = "{SPACE}" Then $t[$i][1] = " "
         Next
         _ArraySort($t)
         $row[0][1] = $t
         _ArrayAdd($data, $row)
     Else
         $t = $data[$t][1]; To read out the embedded array.
-        If Not IsArray($t) Then Return SetError(0, 0, $sBRL); The default keyboard layout.
+        If Not IsArray($t) Then Return SetError(0, 0, StringRegExpReplace($sBRL, "([!#+\^{}])", "\{${1}\}")); The default keyboard layout.
     EndIf
     $sBRL = BRL2Bopomofo($sBRL)
     If Not $sBRL Then Return SetError(@error, @extended, $sBRL)

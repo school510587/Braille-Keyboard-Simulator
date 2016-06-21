@@ -118,10 +118,8 @@ Func _KeyProc($nCode, $wParam, $lParam)
                             If StringIsAlpha($dots[0]) Then
                                 $dots[0] = StringLower($dots[0])
                                 If BitXOR((BitAND($state[0], $DOT_7)) ? 1 : 0, _WinAPI_GetKeyState($VK_CAPITAL)) Then $dots[0] = "+" & $dots[0]
-                                Send($dots[0], 0)
-                            Else
-                                Send($dots[0], 1)
                             EndIf
+                            Send($dots[0], 0)
                             $buffer = ""
                         ElseIf @error Then
                             _WinAPI_MessageBeep()

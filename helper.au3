@@ -33,7 +33,7 @@ Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys
 
 Func BRL2Bopomofo($sBRL, $bReload = False)
     Static $table = Null
-    If $bReload Or Not $table Then
+    If $bReload Or Not IsArray($table) Then
         Local $bopomofo_list
         _FileReadToArray("bopomofo.txt", $table, $FRTA_NOCOUNT, @TAB)
         If @error Then

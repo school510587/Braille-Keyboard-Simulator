@@ -57,8 +57,8 @@ Func BRL2Bopomofo($sBRL, $bReload = False)
 EndFunc
 
 Func BRL2Chr($iBRL); BRL to character, except the space.
-    Static $raw = "a1b'k2l`cif/msp""e3h9o6r~djg>ntq,*5<-u8v.%{$+x!&;:4|0z7(_?w}#y)="; It must be constant.
-    Local $c = StringMid($raw, BitAND($iBRL, $SIX_DOTS_MASK), 1)
+    Static $raw = " a1b'k2l`cif/msp""e3h9o6r~djg>ntq,*5<-u8v.%{$+x!&;:4|0z7(_?w}#y)="; It must be constant.
+    Local $c = StringMid($raw, BitAND($iBRL, $SIX_DOTS_MASK) + 1, 1)
     If BitAND($iBRL, $DOT_7) Then
         $c = Asc($c)
         Switch $c

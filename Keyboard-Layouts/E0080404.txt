@@ -48,6 +48,7 @@
 3129	m
 
 # Punctuation Marks
+203B	^!,r
 3001	^'
 3002	^.
 300C	^!,=

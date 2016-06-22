@@ -71,3 +71,9 @@ FF5D	^+]
 2191	^!,h
 2192	^!,n
 2193	^!,j
+
+# Greek Characters
+03B1	`u03b1
+03B2	`u03b2
+03B3	`u03b3
+03B4	`u03b4

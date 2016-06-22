@@ -2,6 +2,7 @@
 #include <Array.au3>
 #include <AutoItConstants.au3>
 #include <File.au3>
+#include <Math.au3>
 
 Global Enum Step *2 _; Flags for keyboard states (dots, the space bar, menu keys).
     $DOT_1 = 1, _
@@ -35,7 +36,7 @@ Func BRL2Bopomofo($sBRL, $bReload = False)
     Static $table = Null
     If $bReload Or Not IsArray($table) Then
         Local $bopomofo_list
-        _FileReadToArray("bopomofo.txt", $table, $FRTA_NOCOUNT, @TAB)
+        $table = ReadMapping("bopomofo.txt")
         If @error Then
             $table = Null
             Return SetError($EOF, 0, "")
@@ -136,7 +137,7 @@ Func BRL2Key($sBRL, $hKL)
     Local $t = _ArraySearch($data, $hKL)
     If @error Then; The specified $hKL is currently not found.
         Local $row[][UBound($data, $UBOUND_COLUMNS)] = [[$hKL]], $pos = 0
-        _FileReadToArray("Keyboard-Layouts\" & Hex($hKL, 8) & ".txt", $t, $FRTA_NOCOUNT, @TAB)
+        $t = ReadMapping("Keyboard-Layouts\" & Hex($hKL, 8) & ".txt")
         If @error Then Return SetError($EOF, 0, $sBRL)
         For $i = 0 To UBound($t, $UBOUND_ROWS) - 1
             $t[$i][0] = Dec($t[$i][0])
@@ -156,4 +157,24 @@ Func BRL2Key($sBRL, $hKL)
         $answer &= @error ? $c : $t[$p][1]
     Next
     Return SetError(0, 0, $answer)
+EndFunc
+
+Func ReadMapping($sFilePath)
+    Local $lines, $iLen = 0, $iDim2 = 0
+    _FileReadToArray($sFilePath, $lines, BitOR($FRTA_NOCOUNT, $FRTA_INTARRAYS), @TAB)
+    If @error Then Return SetError(@error, @extended, 0)
+    For $i = 0 To UBound($lines) - 1
+        If StringLeft(($lines[$i])[0], 1) <> "#" Then
+            $iDim2 = _Max(UBound($lines[$i]), $iDim2)
+            If $iLen < $i Then _ArraySwap($lines, $iLen, $i)
+            $iLen += 1
+        EndIf
+    Next
+    Local $table[$iLen][$iDim2]
+    For $i = 0 To $iLen - 1
+        For $j = 0 To UBound($lines[$i]) - 1
+            $table[$i][$j] = ($lines[$i])[$j]
+        Next
+    Next
+    Return SetError(0, 0, $table)
 EndFunc

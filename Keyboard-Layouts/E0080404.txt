@@ -1,8 +1,14 @@
+# Tonal Marks
 0020	{SPACE}
 02C7	3
 02CA	6
 02CB	4
 02D9	7
+
+# Bopomofo Symbols
+# 1. Consonants: 0x3105 ~ 0x3119
+# 2. Medials: 0x3127 ~ 0x3129
+# 3. Rhymes: 0x311A ~ 0x3126
 3105	1
 3106	q
 3107	a
